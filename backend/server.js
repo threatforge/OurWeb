@@ -19,9 +19,12 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// CORS config
+// CORS config (Relaxed for Hackathon/Vercel)
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Allow any origin for easy Vercel deployments
+    callback(null, true);
+  },
   credentials: true
 }));
 
