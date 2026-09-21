@@ -37,16 +37,23 @@ const seedDataIfEmpty = async () => {
 };
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return mongoose.connection;
+  }
+  
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000
+    });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     await seedDataIfEmpty();
+    return conn;
   } catch (error) {
     console.error(`Local MongoDB connection failed (${error.message}).`);
     
     if (process.env.VERCEL) {
-        console.error("CRITICAL: You are running on Vercel without a valid MONGO_URI. In-memory MongoDB is not supported on Vercel and will crash.");
-        return;
+        console.error("CRITICAL: You are running on Vercel without a valid MONGO_URI, or the database rejected the connection.");
+        throw new Error("MongoDB connection failed on Vercel");
     }
     
     console.log(`Falling back to in-memory MongoDB Server...`);
@@ -58,6 +65,7 @@ const connectDB = async () => {
       const conn = await mongoose.connect(mongoUri);
       console.log(`In-Memory MongoDB Connected: ${conn.connection.host}`);
       await seedDataIfEmpty();
+      return conn;
     } catch (fallbackError) {
       console.error(`Error connecting to In-Memory MongoDB: ${fallbackError.message}`);
       process.exit(1);

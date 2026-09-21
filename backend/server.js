@@ -11,10 +11,25 @@ const connectDB = require('./config/db');
 // Load env vars
 dotenv.config();
 
-// Connect to database
-connectDB();
+// Connect to database locally
+if (!process.env.VERCEL) {
+  connectDB();
+}
 
 const app = express();
+
+// Serverless DB connection middleware
+if (process.env.VERCEL) {
+  app.use(async (req, res, next) => {
+    try {
+      await connectDB();
+      next();
+    } catch (error) {
+      console.error('Database connection failed in middleware:', error);
+      res.status(500).json({ message: 'Database connection failed' });
+    }
+  });
+}
 
 // Security middleware
 app.use(helmet());
