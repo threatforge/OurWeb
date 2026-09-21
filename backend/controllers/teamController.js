@@ -8,7 +8,8 @@ const getTeamMembers = async (req, res) => {
     const team = await TeamMember.find({});
     res.json(team);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('TEAM FETCH ERROR:', error);
+    res.status(500).json({ message: 'Server error', error: error.message, stack: error.stack });
   }
 };
 
