@@ -26,7 +26,7 @@ if (process.env.VERCEL) {
       next();
     } catch (error) {
       console.error('Database connection failed in middleware:', error);
-      res.status(500).json({ message: 'Database connection failed' });
+      res.status(500).json({ message: 'Database connection failed', error: error.message });
     }
   });
 }
